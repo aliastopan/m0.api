@@ -21,7 +21,8 @@ public class HttpClientService : BackgroundService
         while(await _timer.WaitForNextTickAsync(stoppingToken)
             && !stoppingToken.IsCancellationRequested)
         {
-            await ClientAsync();
+            // await ClientAsync();
+            await Task.CompletedTask;
         }
     }
 
