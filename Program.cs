@@ -17,9 +17,11 @@ builder.Host.ConfigureServices((context, services) =>
 {
     services.AddRouteEndpoints(Assembly.GetExecutingAssembly());
     services.AddDbContext<IDbContext, ApplicationDbContext>(options =>
-        options.UseSqlite(context.Configuration.GetConnectionString("Default")));
+        options.UseSqlite(context.Configuration
+            .GetConnectionString("Default")));
 
-    services.Configure<Settings>(context.Configuration.GetSection(Settings.SectionName));
+    services.Configure<Settings>(context.Configuration
+        .GetSection(Settings.SectionName));
 });
 
 builder.Services.AddHostedService<HttpClientService>();
