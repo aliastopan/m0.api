@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace m0.api.Routes;
 
 public class GasRecordEndpoint : IRouteEndpoint
@@ -10,7 +12,9 @@ public class GasRecordEndpoint : IRouteEndpoint
         app.MapGet("/api/read/date", ReadAtDate);
     }
 
-    internal IResult Write(WriteRequest request, IDbContext dbContext)
+    internal IResult Write(
+        [FromBody] WriteRequest request,
+        [FromServices] IDbContext dbContext)
     {
         var gasRecord = new GasRecord
         {
@@ -25,7 +29,7 @@ public class GasRecordEndpoint : IRouteEndpoint
         return Results.Ok(gasRecord);
     }
 
-    internal IResult Read(IDbContext dbContext)
+    internal IResult Read([FromServices] IDbContext dbContext)
     {
         var gasRecords = dbContext.GasRecords
             .OrderByDescending(x => x.DateTime)
@@ -34,7 +38,7 @@ public class GasRecordEndpoint : IRouteEndpoint
         return Results.Ok(gasRecords);
     }
 
-    internal IResult ReadToday(IDbContext dbContext)
+    internal IResult ReadToday([FromServices] IDbContext dbContext)
     {
         var gasRecords = dbContext.GasRecords
             .Where(x => x.DateTime.IsToday())
@@ -43,7 +47,9 @@ public class GasRecordEndpoint : IRouteEndpoint
         return Results.Ok(gasRecords);
     }
 
-    internal IResult ReadAtDate(ReadAtDateRequest request, IDbContext dbContext)
+    internal IResult ReadAtDate(
+        [FromBody] ReadAtDateRequest request,
+        [FromServices] IDbContext dbContext)
     {
         var gasRecords = dbContext.GasRecords
             .Where(x => x.DateTime.AtDate(request.Date))
