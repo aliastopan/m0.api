@@ -4,11 +4,13 @@ public class GasRecordEndpoint : IRouteEndpoint
 {
     public void DefineEndpoints(WebApplication app)
     {
-        app.MapPost("/mq3", MQ3Write);
-        app.MapGet("/mq3/read", MQ3Read);
+        app.MapPost("/api", Write);
+        app.MapGet("/api/read", Read);
+        app.MapGet("/api/read/today", ReadToday);
+        app.MapGet("/api/read/date", ReadAtDate);
     }
 
-    internal IResult MQ3Write(MQ3WriteRequest request, IDbContext dbContext)
+    internal IResult Write(WriteRequest request, IDbContext dbContext)
     {
         var gasRecord = new GasRecord
         {
@@ -23,9 +25,29 @@ public class GasRecordEndpoint : IRouteEndpoint
         return Results.Ok(gasRecord);
     }
 
-    internal IResult MQ3Read(IDbContext dbContext)
+    internal IResult Read(IDbContext dbContext)
     {
-        var gasRecords = dbContext.GasRecords.Take(10);
+        var gasRecords = dbContext.GasRecords
+            .OrderByDescending(x => x.DateTime)
+            .Take(10);
+
+        return Results.Ok(gasRecords);
+    }
+
+    internal IResult ReadToday(IDbContext dbContext)
+    {
+        var gasRecords = dbContext.GasRecords
+            .Where(x => x.DateTime.IsToday())
+            .OrderByDescending(x => x.DateTime);
+
+        return Results.Ok(gasRecords);
+    }
+
+    internal IResult ReadAtDate(ReadAtDateRequest request, IDbContext dbContext)
+    {
+        var gasRecords = dbContext.GasRecords
+            .Where(x => x.DateTime.AtDate(request.Date))
+            .OrderByDescending(x => x.DateTime);
 
         return Results.Ok(gasRecords);
     }
