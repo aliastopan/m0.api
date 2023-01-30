@@ -6,10 +6,18 @@ public class GasRecordEndpoint : IRouteEndpoint
 {
     public void DefineEndpoints(WebApplication app)
     {
-        app.MapPost("/api", Write);
+        app.MapPost("/api/write", Write);
+        app.MapPost("/api/write/realtime", WriteRealtime);
         app.MapGet("/api/read", Read);
+        app.MapGet("/api/read/realtime", ReadRealtime);
         app.MapGet("/api/read/today", ReadToday);
         app.MapGet("/api/read/date", ReadAtDate);
+    }
+
+    internal IResult WriteRealtime([FromBody] WriteRequest request)
+    {
+        m0.api.Realtime.Mq = request.AnalogValue;
+        return Results.Ok();
     }
 
     internal IResult Write(
@@ -27,6 +35,11 @@ public class GasRecordEndpoint : IRouteEndpoint
         dbContext.Commit();
 
         return Results.Ok(gasRecord);
+    }
+
+    internal IResult ReadRealtime()
+    {
+        return Results.Ok(m0.api.Realtime.Mq);
     }
 
     internal IResult Read([FromServices] IDbContext dbContext)
