@@ -25,10 +25,14 @@ public class GasRecordEndpoint : IRouteEndpoint
         [FromBody] WriteRequest request,
         [FromServices] IDbContext dbContext)
     {
+        var utc = DateTime.UtcNow;
+        var tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        var wib = TimeZoneInfo.ConvertTimeFromUtc(utc, tzi);
+
         var gasRecord = new GasRecord
         {
             Id = Guid.NewGuid(),
-            DateTime = DateTime.Now,
+            DateTime = wib,
             Concentration = request.AnalogValue
         };
 
@@ -54,12 +58,17 @@ public class GasRecordEndpoint : IRouteEndpoint
 
     internal IResult ReadToday([FromServices] IDbContext dbContext)
     {
+        var today = DateTime.Today;
+        var utc = DateTime.UtcNow;
+        var tzi = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+        today = TimeZoneInfo.ConvertTimeFromUtc(utc, tzi);
+
         var gasRecords = dbContext.GasRecords
             .OrderByDescending(x => x.DateTime)
             .Where(x =>
-                x.DateTime.Day == DateTime.Today.Day &&
-                x.DateTime.Month == DateTime.Today.Month &&
-                x.DateTime.Year == DateTime.Today.Year);
+                x.DateTime.Day == today.Day &&
+                x.DateTime.Month == today.Month &&
+                x.DateTime.Year == today.Year);
 
         return Results.Ok(gasRecords);
     }
