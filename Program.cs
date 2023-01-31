@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using System.Reflection;
 using m0.api;
 
@@ -25,10 +26,21 @@ builder.Host.ConfigureServices((context, services) =>
 });
 
 builder.Services.AddHostedService<HttpClientService>();
+builder.Services.AddCors(opt =>
+{
+    var corsBuilder = new CorsPolicyBuilder();
+    corsBuilder.AllowAnyHeader();
+    corsBuilder.AllowAnyMethod();
+    corsBuilder.AllowAnyOrigin();
+    opt.AddPolicy("OpenCorsPolicy", corsBuilder.Build());
+});
+
+var corsBuilder = new CorsPolicyBuilder();
 
 var app = builder.Build();
 
 app.UseHttpsRedirection();
 app.UseRouteEndpoints();
+app.UseCors("OpenCorsPolicy");
 
 app.Run();

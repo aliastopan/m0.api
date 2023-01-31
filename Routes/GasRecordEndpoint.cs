@@ -12,6 +12,7 @@ public class GasRecordEndpoint : IRouteEndpoint
         app.MapGet("/api/read/realtime", ReadRealtime);
         app.MapGet("/api/read/today", ReadToday);
         app.MapGet("/api/read/date", ReadAtDate);
+        app.MapGet("/api/db/purge", Purge);
     }
 
     internal IResult WriteRealtime([FromBody] WriteRequest request)
@@ -54,11 +55,11 @@ public class GasRecordEndpoint : IRouteEndpoint
     internal IResult ReadToday([FromServices] IDbContext dbContext)
     {
         var gasRecords = dbContext.GasRecords
+            .OrderByDescending(x => x.DateTime)
             .Where(x =>
                 x.DateTime.Day == DateTime.Today.Day &&
                 x.DateTime.Month == DateTime.Today.Month &&
-                x.DateTime.Year == DateTime.Today.Year)
-            .OrderByDescending(x => x.DateTime);
+                x.DateTime.Year == DateTime.Today.Year);
 
         return Results.Ok(gasRecords);
     }
@@ -68,12 +69,20 @@ public class GasRecordEndpoint : IRouteEndpoint
         [FromServices] IDbContext dbContext)
     {
         var gasRecords = dbContext.GasRecords
+            .OrderByDescending(x => x.DateTime)
             .Where(x =>
                 x.DateTime.Day == request.Date.Day &&
                 x.DateTime.Month == request.Date.Month &&
-                x.DateTime.Year == request.Date.Year)
-            .OrderByDescending(x => x.DateTime);
+                x.DateTime.Year == request.Date.Year);
 
         return Results.Ok(gasRecords);
+    }
+
+    internal IResult Purge([FromServices] IDbContext dbContext)
+    {
+        dbContext.GasRecords.RemoveRange(dbContext.GasRecords);
+        dbContext.Commit();
+
+        return Results.Ok();
     }
 }
