@@ -54,7 +54,10 @@ public class GasRecordEndpoint : IRouteEndpoint
     internal IResult ReadToday([FromServices] IDbContext dbContext)
     {
         var gasRecords = dbContext.GasRecords
-            .Where(x => x.DateTime.IsToday())
+            .Where(x =>
+                x.DateTime.Day == DateTime.Today.Day &&
+                x.DateTime.Month == DateTime.Today.Month &&
+                x.DateTime.Year == DateTime.Today.Year)
             .OrderByDescending(x => x.DateTime);
 
         return Results.Ok(gasRecords);
@@ -65,7 +68,10 @@ public class GasRecordEndpoint : IRouteEndpoint
         [FromServices] IDbContext dbContext)
     {
         var gasRecords = dbContext.GasRecords
-            .Where(x => x.DateTime.AtDate(request.Date))
+            .Where(x =>
+                x.DateTime.Day == request.Date.Day &&
+                x.DateTime.Month == request.Date.Month &&
+                x.DateTime.Year == request.Date.Year)
             .OrderByDescending(x => x.DateTime);
 
         return Results.Ok(gasRecords);
