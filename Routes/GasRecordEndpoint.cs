@@ -11,7 +11,7 @@ public class GasRecordEndpoint : IRouteEndpoint
         app.MapGet("/api/read", Read);
         app.MapGet("/api/read/realtime", ReadRealtime);
         app.MapGet("/api/read/today", ReadToday);
-        app.MapGet("/api/read/date", ReadAtDate);
+        app.MapGet("/api/read/at/", ReadAtDate);
         app.MapGet("/api/db/purge", Purge);
     }
 
@@ -74,15 +74,18 @@ public class GasRecordEndpoint : IRouteEndpoint
     }
 
     internal IResult ReadAtDate(
-        [FromBody] ReadAtDateRequest request,
+        [FromQuery] string date,
         [FromServices] IDbContext dbContext)
     {
+        var request = DateOnly.Parse(date);
+        Log.Warning("Request: {0}", request);
+
         var gasRecords = dbContext.GasRecords
             .OrderByDescending(x => x.DateTime)
             .Where(x =>
-                x.DateTime.Day == request.Date.Day &&
-                x.DateTime.Month == request.Date.Month &&
-                x.DateTime.Year == request.Date.Year);
+                x.DateTime.Day == request.Day &&
+                x.DateTime.Month == request.Month &&
+                x.DateTime.Year == request.Year);
 
         return Results.Ok(gasRecords);
     }
